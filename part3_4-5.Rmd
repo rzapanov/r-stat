@@ -1,0 +1,92 @@
+---
+title: "matstat domashka upr 4/5"
+output: html_notebook
+---
+
+```{r}
+
+simulatePower <- function(n1, n2, delta, sd = 1, sig.level = 0.05, steps = 10^4) {
+  diff_cnt <- 0
+  
+  for (i in 1:steps) {    
+    # Generate two random samples
+    sample1 <- rnorm(n1, mean = delta, sd = sd)
+    sample2 <- rnorm(n2, mean = 0, sd = sd)
+    
+    t_test_result <- t.test(sample1, sample2)
+    
+    # Increment the counter if differences are detected
+    if (t_test_result$p.value < sig.level) {
+      diff_cnt <- diff_cnt + 1
+    }
+  }
+  
+  power <- diff_cnt / steps
+  
+  return(power)
+}
+```
+
+```{r}
+print("For the sample size of 10:")
+simulatePower(10, 10, 2, sd = 10)
+power.t.test(delta = 2, sd = 10, n = 10)$power
+print("For the sample size of 20:")
+simulatePower(20, 20, 2, sd = 10)
+power.t.test(delta = 2, sd = 10, n = 20)$power
+print("For the sample size of 100:")
+simulatePower(100, 100, 2, sd = 10)
+power.t.test(delta = 2, sd = 10, n = 100)$power
+```
+
+```{r}
+sampleSizes <- seq(10, 1000, 60)
+
+single <- c()
+double <- c()
+triple <- c()
+quadruple <- c()
+
+d <- 2
+sd = 10
+
+for(i in sampleSizes) {
+  single <- c(single, simulatePower(i, i, d, sd = sd, steps=2*10^3))
+  double <- c(double, simulatePower(2 * i, i, d, sd = sd, steps=2*10^3))
+  triple <- c(triple, simulatePower(3 * i, i, d, sd = sd, steps=2*10^3))
+  quadruple <- c(quadruple, simulatePower(4 * i, i, d, sd = sd, steps=2*10^3))
+}
+```
+
+
+```{r}
+plot(sampleSizes, single, type = "l", col = "purple")
+lines(sampleSizes, double, col = "red")
+lines(sampleSizes, triple, col = "green")
+lines(sampleSizes, quadruple, col = "blue")
+```
+
+## Вывод:
+
+Увеличение размера выборки одной из групп может позволить увеличить мощность, получаемую тестом.
+
+## Песочница
+
+```{r}
+
+
+single_p <- 1 - single
+double_norm <- (1 - double) / single_p
+triple_norm <- (1 - triple) / single_p
+quadruple_norm <- (1 - quadruple) / single_p
+
+plot(sampleSizes, double_norm, type = "l", col = "red")
+#lines(sampleSizes, single_p, , col = "purple")
+lines(sampleSizes, triple_norm, col = "green")
+lines(sampleSizes, quadruple_norm, col = "blue")
+
+```
+
+```{r}
+
+```
